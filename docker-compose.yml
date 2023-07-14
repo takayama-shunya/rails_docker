@@ -1,0 +1,49 @@
+version: '3'
+services:
+  # アプリケーションに関する記述
+  app:
+    build:
+      # contextは読み込むDockerfileの場所を指定
+      context: .
+    env_file:
+      - ./environments/db.env
+    command: bundle exec puma -C config/puma.rb
+    volumes:
+      # ローカルのフォルダ「src」にマウント
+      - ./src:/var/www/html
+      # コンテナの中身を保存しておくために作成したボリュームでマウント
+      - public-data:/var/www/html/public
+      - tmp-data:/var/www/html/tmp
+      - log-data:/var/www/html/log
+    # db起動後にappを起動させる設定（依存関係）
+    depends_on:
+      - db
+  # DBに関する記述（PostgreSQLの場合）
+  db:
+    # 2022年5月26日時点の最新版
+    image: postgres:14.3
+    env_file:
+      - ./environments/db.env
+    # コンテナの中身を保存しておくために作成したボリュームでマウント
+    volumes:
+      - db-data:/var/lib/postgresql/data
+  # Webサーバーに関する記述
+  web:
+    build:
+      # contextは読み込むDockerfileの場所を指定
+      context: ./nginx
+    volumes:
+      # コンテナの中身を保存しておくために作成したボリュームでマウント
+      - public-data:/var/www/html/public
+      - tmp-data:/var/www/html/tmp
+    ports:
+      - 80:80
+    # app起動後にwebを起動させる設定（依存関係）
+    depends_on:
+      - app
+# Dockerコンテナの中身を保存しておくための領域を設定
+volumes:
+  public-data:
+  tmp-data:
+  log-data:
+  db-data:
