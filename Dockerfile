@@ -13,17 +13,18 @@ RUN apt-get update -qq && \
     && rm -rf /var/lib/apt/lists/*
 
 # 作業ディレクトリの設定
-RUN mkdir /var/www/html
-ENV APP_ROOT /var/www/html
-WORKDIR $APP_ROOT
+# RUN mkdir /var/www/html
+# ENV APP_ROOT /var/www/html
+# WORKDIR $APP_ROOT
+WORKDIR /var/www/html
 
 # gemfileを追加する
-ADD ./src/Gemfile $APP_ROOT/Gemfile
-ADD ./src/Gemfile.lock $APP_ROOT/Gemfile.lock
+ADD ./src/Gemfile /var/www/html/Gemfile
+ADD ./src/Gemfile.lock /var/www/html/Gemfile.lock
 
 # gemfileのinstall
 RUN bundle install
-ADD ./src $APP_ROOT
+ADD ./src /var/www/html
 
 # puma.sockを配置するディレクトリを作成
 RUN mkdir -p tmp/sockets
