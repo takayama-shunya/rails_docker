@@ -3,47 +3,45 @@ services:
   # アプリケーションに関する記述
   app:
     build:
-      # contextは読み込むDockerfileの場所を指定
       context: .
-    env_file:
-      - ./environments/db.env
-    command: bundle exec puma -C config/puma.rb
+      dockerfile: ./docker/rails/Dockerfile
+    command: bundle exec unicorn -p 3000 -c /app/config/unicorn.rb
+    # command: bundle exec rails s -p 3000 -b '0.0.0.0'
+    ports:
+      - '3000:3000'
     volumes:
       # ローカルのフォルダ「src」にマウント
-      - ./src:/var/www/html
-      # コンテナの中身を保存しておくために作成したボリュームでマウント
-      - public-data:/var/www/html/public
-      - tmp-data:/var/www/html/tmp
-      - log-data:/var/www/html/log
-    # db起動後にappを起動させる設定（依存関係）
+      - /var/tmp
+      - ./src:/app
     depends_on:
       - db
   # DBに関する記述（PostgreSQLの場合）
   db:
     # 2022年5月26日時点の最新版
     image: postgres:14.3
-    env_file:
-      - ./environments/db.env
+    platform: linux/x86_64
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
     # コンテナの中身を保存しておくために作成したボリュームでマウント
     volumes:
       - db-data:/var/lib/postgresql/data
   # Webサーバーに関する記述
   web:
     build:
-      # contextは読み込むDockerfileの場所を指定
-      context: ./nginx
+      context: .
+      dockerfile: ./docker/nginx/Dockerfile
     volumes:
       # コンテナの中身を保存しておくために作成したボリュームでマウント
-      - public-data:/var/www/html/public
-      - tmp-data:/var/www/html/tmp
+      - ./src/:/app
+      - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
     ports:
       - 80:80
     # app起動後にwebを起動させる設定（依存関係）
     depends_on:
       - app
-# Dockerコンテナの中身を保存しておくための領域を設定
+
 volumes:
-  public-data:
-  tmp-data:
-  log-data:
   db-data:
