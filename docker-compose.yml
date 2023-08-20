@@ -3,16 +3,17 @@ services:
   # アプリケーションに関する記述
   app:
     build:
-      context: .
-      dockerfile: ./docker/rails/Dockerfile
+      context: ./
+      dockerfile: ./Docker/rails/Dockerfile
     command: bundle exec unicorn -p 3000 -c /app/config/unicorn.rb
     # command: bundle exec rails s -p 3000 -b '0.0.0.0'
     ports:
       - '3000:3000'
     volumes:
       # ローカルのフォルダ「src」にマウント
-      - /var/tmp
       - ./src:/app
+    tty: true #pry-byebugを使えるようにする
+    stdin_open: true
     depends_on:
       - db
   # DBに関する記述（PostgreSQLの場合）
@@ -31,12 +32,12 @@ services:
   # Webサーバーに関する記述
   web:
     build:
-      context: .
-      dockerfile: ./docker/nginx/Dockerfile
+      context: ./
+      dockerfile: ./Docker/nginx/Dockerfile
     volumes:
       # コンテナの中身を保存しておくために作成したボリュームでマウント
       - ./src/:/app
-      - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./Docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
     ports:
       - 80:80
     # app起動後にwebを起動させる設定（依存関係）

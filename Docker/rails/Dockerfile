@@ -12,16 +12,16 @@ RUN apt-get update -qq && \
 
 RUN mkdir /app
 WORKDIR /app
-ADD ./src/Gemfile /app/Gemfile
-ADD ./src/Gemfile.lock /app/Gemfile.lock
+COPY ./src/Gemfile /app/Gemfile
+COPY ./src/Gemfile.lock /app/Gemfile.lock
 RUN bundle install
 # Unicornの設定ファイルをコピー
-COPY ./Docker/rails/unicorn.rb /app/config/unicorn.rb
+COPY ./Docker/rails/unicorn.rb /app/config/
 
 # RUN mkdir -p /app/tmp/pids && \
 #     chmod -R 777 /app/tmp/pids
 
-ADD ./src /app
+COPY ./src /app
 
 # 3000番ポートを開放
 EXPOSE 3000
