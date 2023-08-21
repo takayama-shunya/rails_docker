@@ -4,11 +4,13 @@ FROM ruby:3.1.2
 
 # RUN apt-get update -qq && apt-get install -y build-essential libpq-dev nodejs
 # /var/lib/apt/lists配下のキャッシュを削除し容量を小さくする
-RUN apt-get update -qq && \
+RUN curl -sL https://deb.nodesource.com/setup_lts.x | bash - && \
+    apt-get update -qq && \
     apt-get install -y build-essential \
                        libpq-dev \
                        nodejs \
     && rm -rf /var/lib/apt/lists/*
+RUN npm install -g yarn
 
 RUN mkdir /app
 WORKDIR /app
